@@ -8,7 +8,7 @@ library(here) # Possui a função here()
 library(plotly)
 
 # Carregando funções ----
-
+source(here("Graficos.R"))
 
 # Aparência do Dashboard ---- 
 
@@ -19,7 +19,7 @@ mytheme <- create_theme(
   ),
   adminlte_sidebar(
     width = "200px",
-    dark_bg = "#ffffff", # Deixa o sidebar branco,
+    dark_bg = "#000000", # Deixa o sidebar branco,
     dark_hover_bg = "#4FB6A7", # Faz com que o item selecionado seja verde;
     dark_color = "#652177"
   )
@@ -27,19 +27,17 @@ mytheme <- create_theme(
 
 # Dashboard ---- 
 
-header <- dashboardHeader(title = "Depois Imagem"
-  
-  # title = tags$img(src="https://i.ibb.co/9VZRpG5/icon-dash-sem-fundo.png", 
-  #                  width = '110%')
-  
-) # Fechamento função dashboardHeader()
+header <- dashboardHeader(disable = T) # Fechamento função dashboardHeader()
 
 sidebar <- dashboardSidebar(
   
   sidebarMenu( # Menu no Sidebar ----
                menuItem("Análises Descritivas", tabName = "descritivas", icon = icon("dashboard")),
                menuItem("Testes Estatísticos", icon = icon("instagram"), tabName = "testes"),
-               menuItem("Sobre o Banco", icon = icon("linkedin"), tabName = "banco")
+               menuItem("Sobre o Banco", icon = icon("linkedin"), tabName = "banco"),
+               tags$img(src="https://operdata.com.br/wp-content/uploads/2019/07/logo_light-185x156.png",
+                        margin = "center",
+                        width = "60%")
   ) # Fechamento função sidebarMenu()
   
 ) # Fechamento função dashboardSidebar()
@@ -52,48 +50,82 @@ body <- dashboardBody(
     
     tabItem(tabName = "descritivas", 
             
-            fluidRow( # Adicionando a primeira linha de gráficos
-              box( # Gráfico OKR - Instagram ----
-                   title = "Visitantes - Instagram", width = 3, 
-                   height = 170, "Algo escrito"
-              ),
-              
-              box( # Gráfico OKR - LinkedIn ----
-                   title = "Visualizações - LinkedIn", width = 3,
-                   height = 170, "Algo escrito"
-              ),
-              
-              box( # Gráfico OKR - Site ----
-                   title = "Usuários do Site", width = 3,
-                   height = 170, "Algo escrito"
-              ) ,
-              
-              box( # Gráfico OKR - Site ----
-                   title = "Usuários do Site", width = 3,
-                   height = 170, "Algo escrito"
-              )
-              
-            ), # Fechamento fluidRow()
+          navbarPage("",
             
-            fluidRow(
-              
-              box( # Gráfico dos quadradinhos ---- 
-                   width = 12,
-                   height = 370,
-                   radioGroupButtons(
-                     inputId = "var",
-                     label = "Escolha a Variável",
-                     choices = c("Emprego", "Gênero", "Idade", "Performance", "Título",
-                                 "Departamento", "Senioridade"),
-                     justified = TRUE), # Seletor
-                   
-              ) # Fechamento do box
-              
-            ) # Fechamento fluidRow()
+            tabPanel("Principais", # Primeira aba com descritivas ---- 
+                     
+                     fluidRow( # Adicionando a primeira linha de gráficos
+                       box( 
+                         title = "Visitantes - Instagram", width = 3, 
+                         height = 170, "Algo escrito"
+                       ),
+                       
+                       box( 
+                         title = "Visualizações - LinkedIn", width = 3,
+                         height = 170, "Algo escrito"
+                       ),
+                       
+                       box( 
+                         title = "Usuários do Site", width = 3,
+                         height = 170, "Algo escrito"
+                       ) ,
+                       
+                       box( 
+                         title = "Usuários do Site", width = 3,
+                         height = 170, "Algo escrito"
+                       )
+                       
+                     )
+                     
+                     ) , # Fechamento tabPanel
+                       
+            tabPanel("Comparações", # Segunda Aba com descritivas ----
+                     
+                     fluidRow(
+                       
+                       box( # Gráficos das Variáveis Categóricas ---- 
+                            width = 12,
+                            height = 100,
+                            radioGroupButtons(
+                              inputId = "var",
+                              label = "Escolha a Variável",
+                              choices = c("Emprego", "Idade", "Performance", "Titulo",
+                                          "Departamento", "Senioridade"),
+                              justified = TRUE), # Seletor
+                            
+                       ) # Fechamento do box
+                       
+                     ), # Fechamento fluidRow() 
+                     
+                     fluidRow(  # Output das descritivas 2 ----
+                       
+                       box(width = 6,
+                           height = 300, 
+                           plotlyOutput("simples", width = "500px", height = "230px"),),
+                       
+                       box(width = 6,
+                           height = 300,
+                           plotlyOutput("proporcao", width = "500px", height = "230px"))
+                       
+                       ), # Fechamento fluidRow()
+                     
+                     fluidRow(
+                       
+                       box(width = 6,
+                           height = 300, ),
+                       
+                       box(width = 6,
+                           height = 300,)
+                       
+                     ) # Fechamento fluidRow()
+                     
+                     ) # Fechamento tabPanel
             
-    ), # Fechamento função tabIten(Geral)
+            ), # Fechamento função tabIten(Geral)
     
-    tabItem(tabName = "instagram",
+    ),  # Fechamento do primeiro tabItem;
+    
+    tabItem(tabName = "testes", # Segunda Aba ----
             
             fluidRow(
               
@@ -143,7 +175,7 @@ body <- dashboardBody(
             
     ), # Fechamento função tabIten(Instagram)
     
-    tabItem(tabName = "linkedin",
+    tabItem(tabName = "banco", # Sobre o Banco ----
             
             fluidRow(
               
@@ -200,7 +232,16 @@ body <- dashboardBody(
 ui <- dashboardPage(header, sidebar, body)
 
 server <- function(input, output) {
-  # output$simples <- 
+   output$simples <- renderPlotly({ # Gráfico Univariado ----
+     univar <- univar(input$var)
+     ggplotly(univar)
+   })
+   
+   output$proporcao <- renderPlotly({ # Gráficos com proporção ----
+     prop <- prop(input$var)
+     ggplotly(prop)
+   })
+   
    }
 
 shinyApp(ui, server)

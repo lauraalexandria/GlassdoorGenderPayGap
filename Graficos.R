@@ -11,7 +11,7 @@ dados <- read.csv2("dados.csv", sep = ";") %>% select(-1) %>%
                             Gender == "Male" ~ "Masculino")) 
 dados$Idade <- fct_relevel(as.factor(dados$Idade), "18 - 24", "25 - 32", "33 - 39",
                            "40 - 47", "48 - 55", "> 55")
-colnames(dados) <- c("Emprego", "Gênero", "Age", "Performance", "Título",
+colnames(dados) <- c("Emprego", "Genero", "Age", "Performance", "Titulo",
                      "Departamento", "Senioridade", "PagamentoBase", "Bonus",
                      "Idade")
 
@@ -19,10 +19,10 @@ colnames(dados) <- c("Emprego", "Gênero", "Age", "Performance", "Título",
 
 univar <- function(var){
   if(var == "Idade"){
-    ggplot(dados, aes(Age)) + geom_bar() + 
+    ggplot(dados, aes(Age)) + geom_histogram() + 
       labs(x = "", y = "", title = var)
   } else{
-    ggplot(dados, aes(get(var))) + geom_bar()  + 
+    ggplot(dados, aes(y = get(var))) + geom_bar()  + 
       labs(x = "", y = "", title = var)
   }
 }
@@ -30,15 +30,15 @@ univar <- function(var){
 # Proporções ----
 
 prop <- function(var){
-  ggplot(dados, aes(get(var), fill = `Gênero`)) + geom_bar(position = "fill") + 
-    labs(x = "", y = "") + theme(legend.position = "top")
+  ggplot(dados, aes(y = get(var), fill = `Genero`)) + geom_bar(position = "fill") + 
+    labs(x = "", y = "", fill = "") + theme(legend.position = "top")
 }
 
 # Boxplots com Salários ----
 
 boxplot <- function(var){
-  ggplot(dados, aes(color = as.factor(get(var)), x = `Gênero`, y = PagamentoBase+Bonus)) + 
-    geom_jitter() + geom_boxplot() + labs(x = "", y = "")
+  ggplot(dados, aes(color = as.factor(get(var)), x = `Genero`, y = PagamentoBase+Bonus)) + 
+    geom_jitter() + geom_boxplot() + labs(x = "", y = "", color = "")
 }
 
 
