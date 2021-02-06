@@ -12,6 +12,8 @@ source(here("Graficos.R"))
 
 # Aparência do Dashboard ---- 
 
+theme_set(theme_minimal())
+
 mytheme <- create_theme(
   adminlte_color(
     light_blue = "#ffffff", # Alterando tudo que recebe a cor "light_blue", o que inclui a header;
@@ -19,9 +21,13 @@ mytheme <- create_theme(
   ),
   adminlte_sidebar(
     width = "200px",
-    dark_bg = "#000000", # Deixa o sidebar branco,
-    dark_hover_bg = "#4FB6A7", # Faz com que o item selecionado seja verde;
-    dark_color = "#652177"
+    dark_bg = "#283a4e", # Muda a cor de fundo do sidebar,
+    dark_hover_bg = "#57b952", # Faz com que o item selecionado seja verde;
+    dark_color = "#ffffff" # Cor das letras
+  ),
+  adminlte_global(
+    content_bg = "#d1d9d9", # Altera a cor do plano de fundo
+    info_box_bg = "#D8DEE9"
   )
 )
 
@@ -50,48 +56,57 @@ body <- dashboardBody(
     
     tabItem(tabName = "descritivas", 
             
-          navbarPage("",
+          navbarPage(title = "", 
             
             tabPanel("Principais", # Primeira aba com descritivas ---- 
                      
-                     fluidRow( # Adicionando a primeira linha de gráficos
+                     fluidRow( # ValueBoxes com as médias
                        box( 
-                         title = "Visitantes - Instagram", width = 3, 
-                         height = 170, "Algo escrito"
+                         title = "Visitantes - Instagram", width = 4, 
+                         height = 120, "Algo escrito"
                        ),
                        
                        box( 
-                         title = "Visualizações - LinkedIn", width = 3,
-                         height = 170, "Algo escrito"
+                         title = "Visualizações - LinkedIn", width = 4,
+                         height = 120, "Algo escrito"
                        ),
                        
                        box( 
-                         title = "Usuários do Site", width = 3,
-                         height = 170, "Algo escrito"
-                       ) ,
+                         title = "Usuários do Site", width = 4,
+                         height = 120, "Algo escrito")
+                       
+                       ), # Fechamento fluidRow()
+                     
+                     fluidRow( 
+                       box( 
+                         title = "Visitantes - Instagram", width = 6, 
+                         height = 430, 
+                         plotOutput("pizza")
+                       ),
                        
                        box( 
-                         title = "Usuários do Site", width = 3,
-                         height = 170, "Algo escrito"
+                         title = "Visualizações - LinkedIn", width = 6,
+                         height = 430, 
+                         plotOutput("histograma")
                        )
                        
-                     )
+                     ) # Fechamento fluidRow()
                      
                      ) , # Fechamento tabPanel
                        
             tabPanel("Comparações", # Segunda Aba com descritivas ----
                      
-                     fluidRow(
+                     fluidRow(  # Gráficos das Variáveis Categóricas ---- 
                        
-                       box( # Gráficos das Variáveis Categóricas ---- 
+                       box(
                             width = 12,
                             height = 100,
                             radioGroupButtons(
                               inputId = "var",
                               label = "Escolha a Variável",
-                              choices = c("Emprego", "Idade", "Performance", "Titulo",
+                              choices = c("Cargo", "Idade", "Performance", "Titulo",
                                           "Departamento", "Senioridade"),
-                              justified = TRUE), # Seletor
+                              justified = TRUE # Seletor
                             
                        ) # Fechamento do box
                        
@@ -101,7 +116,7 @@ body <- dashboardBody(
                        
                        box(width = 6,
                            height = 300, 
-                           plotlyOutput("simples", width = "500px", height = "230px"),),
+                           plotlyOutput("simples", width = "500px", height = "230px")),
                        
                        box(width = 6,
                            height = 300,
@@ -112,14 +127,16 @@ body <- dashboardBody(
                      fluidRow(
                        
                        box(width = 6,
-                           height = 300, ),
+                           height = 300 ),
                        
                        box(width = 6,
-                           height = 300,)
+                           height = 300)
                        
                      ) # Fechamento fluidRow()
                      
                      ) # Fechamento tabPanel
+                     
+            ) # Fechamento navbarPage()
             
             ), # Fechamento função tabIten(Geral)
     
@@ -232,6 +249,15 @@ body <- dashboardBody(
 ui <- dashboardPage(header, sidebar, body)
 
 server <- function(input, output) {
+  
+  output$pizza <- renderPlot({ # Gráfico de Pizza ----
+    pizza()
+  })
+  
+  output$histograma <- renderPlot({ # Gráfico de Histograma ----
+    salarios()
+  })
+  
    output$simples <- renderPlotly({ # Gráfico Univariado ----
      univar <- univar(input$var)
      ggplotly(univar)

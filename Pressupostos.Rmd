@@ -1,0 +1,62 @@
+---
+title: "Testes Estatísticos"
+author: "Laura Alexandria"
+date: "05/02/2021"
+output: html_document
+---
+
+```{r message = F, warning=F}
+library(tidyverse)
+library(patchwork)
+library(nortest)
+library(here)
+library(gt)
+
+source(here("Graficos.R"))
+```
+
+## Testes de Normalidade
+
+```{r}
+histograma <- function(var){
+  ggplot(dados, aes(get(var))) + 
+    geom_histogram(bins = 8, color = "White") +
+      labs(y = "Frequência", x = "")
+}
+
+qqplot <- function(var){
+  ggplot(dados, aes(sample =get(var))) + stat_qq() + stat_qq_line() +
+    labs(x = "", y = "Valor Observado")
+}
+
+h1 <- histograma("Age")
+h2 <- histograma("PagamentoBase")
+h3 <- histograma("Bonus")
+
+qq1 <- qqplot("Age")
+qq2 <- qqplot("PagamentoBase")
+qq3 <- qqplot("Bonus")
+
+(g1+g2+g3) / (qq1+qq2+qq3)
+```
+
+```{r}
+testes <- data.frame(`Variavel` = c("Idade", "Pagamento Base", "Bonus"),
+                     `P-valor` = c(ad.test(dados$Age)[[2]], 
+                                   ad.test(dados$PagamentoBase)[[2]], 
+                                   ad.test(dados$Bonus)[[2]]))
+testes %>% gt()
+```
+
+Nitidamente a idade não aparenta seguir uma distribuição Normal. Apesar do formato de sino que as outras variáveis apresentam, os testes rejeitaram a possibilidade de que as variáveis apresentem distribuição Normal, provavelmente devido a assimetria.
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

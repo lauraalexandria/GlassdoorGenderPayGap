@@ -11,11 +11,30 @@ dados <- read.csv2("dados.csv", sep = ";") %>% select(-1) %>%
                             Gender == "Male" ~ "Masculino")) 
 dados$Idade <- fct_relevel(as.factor(dados$Idade), "18 - 24", "25 - 32", "33 - 39",
                            "40 - 47", "48 - 55", "> 55")
-colnames(dados) <- c("Emprego", "Genero", "Age", "Performance", "Titulo",
+colnames(dados) <- c("Cargo", "Genero", "Age", "Performance", "Titulo",
                      "Departamento", "Senioridade", "PagamentoBase", "Bonus",
                      "Idade")
 
 # Gráficos Básicos ----
+
+pizza <- function(){
+  ggplot(dados, aes(x = factor(1), fill = Genero)) + geom_bar(width = 1) + 
+    coord_polar("y") + 
+    labs(title = "",
+         fill = "Legenda") +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank(), 
+          axis.text = element_blank(),
+          axis.text.x = element_blank(),
+          panel.grid.major.y = element_blank(),
+          axis.ticks = element_blank(),
+          legend.position = "top")
+}
+
+salarios <- function(){
+  ggplot(dados, aes(x = PagamentoBase + Bonus)) + geom_histogram(color = "white") + 
+    labs(x = "", y = "Frequência")
+}
 
 univar <- function(var){
   if(var == "Idade"){
