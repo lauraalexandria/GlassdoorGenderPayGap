@@ -37,19 +37,19 @@ pizza <- function(){
 
 salarios <- function(){
   ggplot(dados, aes(x = Total)) + geom_histogram(color = "white", fill = "#d1d9d9") + 
-    labs(x = "", y = "Frequência")
+    labs(x = "", y = "Frequencia")
 }
 
 pontos <- function(){
   ggplot(dados, aes(y = Total, x = Genero, color = Genero)) + geom_jitter() + 
-    labs(x = "", y = "Frequência") + 
+    labs(x = "", y = "Frequencia") + 
     scale_color_manual(values=paleta1(2))
 }
 
 univar <- function(var){
   if(var == "Idade"){
     ggplot(dados, aes(Age)) + geom_histogram(fill = "#283a4e") + 
-      labs(x = "", y = "", title = var)
+      labs(x ="", y = "", title = var)
   } else{
     ggplot(dados, aes(y = get(var))) + geom_bar(fill = "#283a4e")  + 
       labs(x = "", y = "", title = var)

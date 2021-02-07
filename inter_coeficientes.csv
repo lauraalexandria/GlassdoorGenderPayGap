@@ -1,0 +1,7 @@
+"","Var","Interpretacao"
+"1","Cargo","O modelo apontou que os coeficientes dos cargos de Gerente, Associados do Marketing e Engenhieros de Software se mostraram significativamanete diferente dos demais cargos Ao olhar para os fatores cruzados, nenhum dos cargos apresenta diferença significativa entre os dois gêneros."
+"2","Idade","Pode-se observar que os coeficientes para todas as faixas etárias se mostraram significativas, ao contrário dos coeficientes relacionados ao fatores do interação, em que nenhum mostrou significantemente diferente de zero."
+"3","Perfomance","É observada que o coeficiente ligado à variação das notas de performances é significantemente diferente de zero, porém o coeficiente ligado a interação com os gêneros não de mostrou significativo."
+"4","Titulo","Pela análise dos resultados é visto que o coeficiente relacionado a ter ou não PhD e o coeficiente relacionado a ter ou não Mestrado se mostraram significativamente diferentes de zero. Mas não parece haver diferenças significativas entre os valores totais das diferentes titulações em relação aos dois gêneros."
+"5","Departamento","Pode-se observar que não houve diferença significativa entre os diferentes departamentos ou a interação entre esses departamentos e o gênero dos funcionários."
+"6","Senioridade","Para Senioridade, é possível observar que o coeficiente se mostrou significativo, de forma que o aumento dos anos de trabalho na empresa aumentam o salário do trabalhador, porém o coeficiente para a interação entre essa variável e o Gênero não se mostraram significativos."

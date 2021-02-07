@@ -15,26 +15,16 @@ library(gt)
 source(here("Graficos.R"))
 ```
 
-# Verificando interações
+
+# Modelos
 
 ```{r}
-interacao <- function(var1, var2){
-  group_by(dados, get(var1), get(var2)) %>% summarise(media = mean(Total)) %>% 
-    ggplot(aes(x = `get(var1)`, y=media, color = as.factor(`get(var2)`))) + geom_line()
-}
-```
-
-
-# ANOVA
-
-```{r}
-mod <- aov(Total ~ Genero + Cargo + Idade + as.factor(Performance) + Titulo +
-                   Departamento + as.factor(Senioridade), dados)
-summary(mod)
-
-# mod2 <- aov(Total ~ Genero*Cargo*Idade*Performance*Titulo*
-#                    Departamento*Senioridade, dados)
-# summary(mod2)
+m1 <- lm(Total ~ Genero*Cargo, dados)
+m2 <- lm(Total ~ Genero*Idade, dados)
+m3 <- lm(Total ~ Genero*as.factor(Performance), dados)
+m4 <- lm(Total ~ Genero*Titulo, dados)
+m5 <- lm(Total ~ Genero*Departamento, dados)
+m6 <- lm(Total ~ Genero*as.factor(Senioridade), dados)
 ```
 
 ```{r}
@@ -112,7 +102,61 @@ testes <- data.frame(`Variavel` = c("Idade", "Pagamento Base", "Bonus", "Total")
 testes %>% gt()
 ```
 
-Nitidamente a idade não aparenta seguir uma distribuição Normal. Apesar do formato de sino que as outras variáveis apresentam, os testes rejeitaram a possibilidade de que as variáveis apresentem distribuição Normal, provavelmente devido a assimetria.
+Nitidamente a idade não aparenta seguir uma distribuição Normal. A variável de pagamento base apresenta formato de sino, bem como simetria, os pontos no qqpolt se apresentam todos próximos da reta, menos nas extremidades e a 5% de significância, o teste de Anderson-Darling também apontou que a distruibuição é normal. Em quanto que a variável com os bonus dos funcionários apesar do formato de sino, é possível observar um assimetria, no gráfico de qqplot os desvios nas extremidades também são maiores, e a 5% de significância o testes de Anderson-Darling indica que a variável não segue distribuição normal. E por fim, a variável Total, que representa a soma entre as duas variáveis anteriores, se comporta mais como a variável de pagamento base e também demonstra evidência amostral que siga a distribuição normal.
 
+## Independência dos resíduos
+
+```{r}
+independencia <- function(mod){
+  data <- cbind(dados, preditos = predict(mod), residuos = resid(mod)) 
+  ggplot(data, aes(x = 1:1000, y= residuos)) + geom_point() +
+  geom_hline(yintercept = 0, color = 'red')
+}
+
+i1 <- independencia(m1)
+i2 <- independencia(m2)
+i3 <- independencia(m3)
+i4 <- independencia(m4)
+i5 <- independencia(m5)
+i6 <- independencia(m6)
+
+(i1+i2+i3)/(i4+i5+i6)
+```
+
+```{r}
+set.seed(2021)
+car::durbinWatsonTest(m1)
+car::durbinWatsonTest(m2)
+car::durbinWatsonTest(m3)
+car::durbinWatsonTest(m4)
+car::durbinWatsonTest(m5)
+car::durbinWatsonTest(m6)
+```
+
+
+## Homocedasticidade
+
+```{r}
+var_const <- function(mod){
+  data <- cbind(dados, preditos = predict(mod), residuos = resid(mod)) 
+  var <- ifelse(str_detect(mod, "1"), "Cargo", ifelse(str_detect(mod, "2"), "Idade",
+         ifelse(str_detect(mod, "3"), "Performance", ifelse(str_detect(mod, "4"), "Titulo", ifelse(str_detect(mod, "5"),  "Departamento", "Senioridade")))))
+  
+  g1 <- ggplot(data, aes(x = preditos, y = residuos))+geom_point()
+  g2 <- ggplot(data, aes(x = Genero, y = residuos))+geom_point()
+  g3 <- ggplot(data, aes(x = get(var), y = residuos))+geom_point()
+  
+  g1+g2+g3
+}
+
+v1 <- var_const(m1)
+v2 <- var_const(m2)
+v3 <- var_const(m3)
+v4 <- var_const(m4)
+v5 <- var_const(m5)
+v6 <- var_const(m6)
+
+v1/v2/v3/v4/v5/v6
+```
 
 
