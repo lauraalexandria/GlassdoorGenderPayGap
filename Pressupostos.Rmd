@@ -15,6 +15,67 @@ library(gt)
 source(here("Graficos.R"))
 ```
 
+# Verificando interações
+
+```{r}
+interacao <- function(var1, var2){
+  group_by(dados, get(var1), get(var2)) %>% summarise(media = mean(Total)) %>% 
+    ggplot(aes(x = `get(var1)`, y=media, color = as.factor(`get(var2)`))) + geom_line()
+}
+```
+
+
+# ANOVA
+
+```{r}
+mod <- aov(Total ~ Genero + Cargo + Idade + as.factor(Performance) + Titulo +
+                   Departamento + as.factor(Senioridade), dados)
+summary(mod)
+
+# mod2 <- aov(Total ~ Genero*Cargo*Idade*Performance*Titulo*
+#                    Departamento*Senioridade, dados)
+# summary(mod2)
+```
+
+```{r}
+mod1 <- aov(Total ~ Genero*Cargo, dados)
+mod2 <- aov(Total ~ Genero*Idade, dados)
+mod3 <- aov(Total ~ Genero*as.factor(Performance), dados)
+mod4 <- aov(Total ~ Genero*Titulo, dados)
+mod5 <- aov(Total ~ Genero*Departamento, dados)
+mod6 <- aov(Total ~ Genero*as.factor(Senioridade), dados)
+summary(mod1)
+summary(mod2)
+summary(mod3)
+summary(mod4)
+summary(mod5)
+summary(mod6)
+```
+
+```{r}
+m1 <- lm(Total ~ Genero*Cargo, dados)
+m2 <- lm(Total ~ Genero*Idade, dados)
+m3 <- lm(Total ~ Genero*as.factor(Performance), dados)
+m4 <- lm(Total ~ Genero*Titulo, dados)
+m5 <- lm(Total ~ Genero*Departamento, dados)
+m6 <- lm(Total ~ Genero*as.factor(Senioridade), dados)
+summary(m1)
+summary(m2)
+summary(m3)
+summary(m4)
+summary(m5)
+summary(m6)
+```
+
+```{r}
+mod.teste <- aov(Total ~ Genero + Cargo + Idade + as.factor(Performance) + Titulo +
+                Departamento + as.factor(Senioridade) + Genero*Cargo + 
+             Genero*Idade + Genero*as.factor(Performance) + Genero*Titulo +
+             Genero*Departamento + Genero*as.factor(Senioridade), dados)
+```
+
+# Análise de Resíduos
+
 ## Testes de Normalidade
 
 ```{r}
@@ -32,31 +93,26 @@ qqplot <- function(var){
 h1 <- histograma("Age")
 h2 <- histograma("PagamentoBase")
 h3 <- histograma("Bonus")
+h4 <- histograma("Total")
 
 qq1 <- qqplot("Age")
 qq2 <- qqplot("PagamentoBase")
 qq3 <- qqplot("Bonus")
+qq4 <- qqplot("Total")
 
-(g1+g2+g3) / (qq1+qq2+qq3)
+(h1+h2+h3+h4) / (qq1+qq2+qq3+qq4)
 ```
 
 ```{r}
-testes <- data.frame(`Variavel` = c("Idade", "Pagamento Base", "Bonus"),
-                     `P-valor` = c(ad.test(dados$Age)[[2]], 
+testes <- data.frame(`Variavel` = c("Idade", "Pagamento Base", "Bonus", "Total"),
+                     `P-valor` = round(c(ad.test(dados$Age)[[2]], 
                                    ad.test(dados$PagamentoBase)[[2]], 
-                                   ad.test(dados$Bonus)[[2]]))
+                                   ad.test(dados$Bonus)[[2]],
+                                   ad.test(dados$Total)[[2]]),4))
 testes %>% gt()
 ```
 
 Nitidamente a idade não aparenta seguir uma distribuição Normal. Apesar do formato de sino que as outras variáveis apresentam, os testes rejeitaram a possibilidade de que as variáveis apresentem distribuição Normal, provavelmente devido a assimetria.
 
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

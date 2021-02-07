@@ -2,13 +2,16 @@ library(tidyverse)
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets) # Para usar umas botões mais diferentões;
-library(fresh) # Alterar as cores do Dash;
-library(xaringanthemer) # Para alterar as letras dos gráficos; 
+library(shinydashboardPlus) 
+library(shinycssloaders)
+library(fresh) # Alterar as cores do Dash; 
 library(here) # Possui a função here()
 library(plotly)
+library(DT)
 
 # Carregando funções ----
 source(here("Graficos.R"))
+source(here("Testes.R"))
 
 # Aparência do Dashboard ---- 
 
@@ -17,7 +20,9 @@ theme_set(theme_minimal())
 mytheme <- create_theme(
   adminlte_color(
     light_blue = "#ffffff", # Alterando tudo que recebe a cor "light_blue", o que inclui a header;
-    teal = "#4FB6A7" # Alterando tudo que recebeu a cor "teal;
+    teal = "#57b952", # Alterando tudo que recebeu a cor "teal;
+    aqua = "#283a4e",
+    maroon = "#40873d"
   ),
   adminlte_sidebar(
     width = "200px",
@@ -26,10 +31,11 @@ mytheme <- create_theme(
     dark_color = "#ffffff" # Cor das letras
   ),
   adminlte_global(
-    content_bg = "#d1d9d9", # Altera a cor do plano de fundo
-    info_box_bg = "#D8DEE9"
+    content_bg = "#d1d9d9" # Altera a cor do plano de fundo
   )
 )
+
+options(spinner.color = "#57b952", spinner.color.brackground = "#ffffff", type = 2)
 
 # Dashboard ---- 
 
@@ -38,11 +44,11 @@ header <- dashboardHeader(disable = T) # Fechamento função dashboardHeader()
 sidebar <- dashboardSidebar(
   
   sidebarMenu( # Menu no Sidebar ----
-               menuItem("Análises Descritivas", tabName = "descritivas", icon = icon("dashboard")),
-               menuItem("Testes Estatísticos", icon = icon("instagram"), tabName = "testes"),
-               menuItem("Sobre o Banco", icon = icon("linkedin"), tabName = "banco"),
+               menuItem("Análises Descritivas", tabName = "descritivas", icon = icon("chart-pie")),
+               menuItem("Testes Estatísticos", icon = icon("percent"), tabName = "testes"),
+               menuItem("Sobre o Banco", icon = icon("database"), tabName = "banco"),
                tags$img(src="https://operdata.com.br/wp-content/uploads/2019/07/logo_light-185x156.png",
-                        margin = "center",
+                        Style="padding-right=25px",
                         width = "60%")
   ) # Fechamento função sidebarMenu()
   
@@ -60,34 +66,53 @@ body <- dashboardBody(
             
             tabPanel("Principais", # Primeira aba com descritivas ---- 
                      
-                     fluidRow( # ValueBoxes com as médias
+                     fluidRow( 
                        box( 
-                         title = "Visitantes - Instagram", width = 4, 
-                         height = 120, "Algo escrito"
+                         background = "aqua",
+                         width = 3, 
+                         height = 120, 
+                         "A Glassdoor é uma empresa que emprega a mesma proporção de homens e mulheres? O gênero influencia na salário recebido pelos funcionários?"
                        ),
                        
-                       box( 
-                         title = "Visualizações - LinkedIn", width = 4,
-                         height = 120, "Algo escrito"
+                       valueBox(      # ValueBoxes com as médias
+                         value = round(mean(dados$Total),2),
+                         subtitle = "Média Salarial", 
+                         icon = icon("dollar-sign"), color = "maroon",
+                         width = 3
                        ),
                        
-                       box( 
-                         title = "Usuários do Site", width = 4,
-                         height = 120, "Algo escrito")
+                       valueBox(      
+                         value = round(mean(filter(dados, Genero == "Masculino")$Total),2),
+                         subtitle = "Média Salarial Masculina", 
+                         icon = icon("male"), color = "maroon",
+                         width = 3
+                       ),
+                       
+                       valueBox(      
+                         value = round(mean(filter(dados, Genero == "Feminino")$Total),2),
+                         subtitle = "Média Salarial Feminina", 
+                         icon = icon("female"), color = "maroon",
+                         width = 3)
                        
                        ), # Fechamento fluidRow()
                      
                      fluidRow( 
                        box( 
-                         title = "Visitantes - Instagram", width = 6, 
+                          width = 4, 
                          height = 430, 
-                         plotOutput("pizza")
+                         withSpinner(plotOutput("pizza"), type =2, color.background = "#ffffff")
                        ),
                        
                        box( 
-                         title = "Visualizações - LinkedIn", width = 6,
+                          width = 4,
                          height = 430, 
-                         plotOutput("histograma")
+                         withSpinner(plotOutput("histograma"), type =2, color.background = "#ffffff")
+                       ),
+                       
+                       box( 
+                         width = 4,
+                         height = 430, 
+                         withSpinner(plotlyOutput("pontos"), type =2, color.background = "#ffffff")
                        )
                        
                      ) # Fechamento fluidRow()
@@ -116,18 +141,19 @@ body <- dashboardBody(
                        
                        box(width = 6,
                            height = 300, 
-                           plotlyOutput("simples", width = "500px", height = "230px")),
+                           withSpinner(plotlyOutput("simples", width = "500px", height = "230px"), type =2, color.background = "#ffffff")),
                        
                        box(width = 6,
                            height = 300,
-                           plotlyOutput("proporcao", width = "500px", height = "230px"))
+                           withSpinner(plotlyOutput("proporcao", width = "500px", height = "230px"), type =2, color.background = "#ffffff"))
                        
                        ), # Fechamento fluidRow()
                      
                      fluidRow(
                        
                        box(width = 6,
-                           height = 300 ),
+                           height = 300,
+                           withSpinner(plotOutput("boxplot", width = "500px", height = "230px"), type =2, color.background = "#ffffff")),
                        
                        box(width = 6,
                            height = 300)
@@ -142,21 +168,16 @@ body <- dashboardBody(
     
     ),  # Fechamento do primeiro tabItem;
     
-    tabItem(tabName = "testes", # Segunda Aba ----
+    tabItem(tabName = "testes", #  Testes Estatísticos ----
             
             fluidRow(
               
               column(width = 9,
                      
-                     box(title = "Métricas Gerais",
-                         width = NULL,
-                         height = 270,
-                         actionBttn("teste", "teste")),
-                     
-                     box(title = "Tipo de Posts",
-                         width = NULL,
-                         height = 270,
-                         "Box content")
+                     box(title = "",
+                         width = 4,
+                         height = 600,
+                         DTOutput("associacao"))
                      
               ), # Fechamento primeira coluna;
               
@@ -190,57 +211,39 @@ body <- dashboardBody(
               
             ) # Fechamento fluidRow()
             
-    ), # Fechamento função tabIten(Instagram)
+    ), # Fechamento função tabIten(testes)
     
     tabItem(tabName = "banco", # Sobre o Banco ----
             
             fluidRow(
+                     
+              box(title = "Métricas Gerais",
+                  width = 6,
+                  height = 270,
+                  actionBttn("teste", "teste")),
+                     
+              widgetUserBox(
+                title = "Laura Alexandria de Oliveria",
+                subtitle = "Estudante - 6° período de Estatística",
+                type = 2,
+                src = "https://media-exp1.licdn.com/dms/image/C4E03AQEIYs8UPRUBtA/profile-displayphoto-shrink_200_200/0/1607697535388?e=1618444800&v=beta&t=d53JblrwITuE3kHHW2N6r95i-Kjear5rAcaWmcvYlSI",
+                color = "aqua",
+                "Some text here!",
+                footer = "The footer here!"
+              )
               
-              column(width = 9,
-                     
-                     box(title = "Métricas Gerais",
-                         width = NULL,
-                         height = 270,
-                         actionBttn("teste", "teste")),
-                     
-                     box(title = "Tipo de Posts",
-                         width = NULL,
-                         height = 270,
-                         "Box content")
-                     
-              ), # Fechamento primeira coluna;
+            ), # Fechamento fluidRow()
+            
+            fluidRow(
               
-              column(width = 3,
-                     
-                     valueBox(width = 30,
-                              "Aumento Seguidores", value = "n", icon = icon("chart-bar"),
-                              color = "teal"),
-                     
-                     valueBox(width = 30,
-                              "Média de Cutidas", value = "n", icon = icon("heart"),
-                              color = "teal"),
-                     
-                     valueBox(width = 30,
-                              "Média de Compartilhamentos", value = "n", icon = icon("paper-plane"),
-                              color = "teal"),
-                     
-                     valueBox(width = 30,
-                              "Média de Salvamentos", value = "n", icon = icon("bookmark"),
-                              color = "teal"),
-                     
-                     valueBox(width = 30,
-                              "Alcance Médio", value = "n", icon = icon("project-diagram"),
-                              color = "teal")
-                     
-                     # valueBox(width = 30,
-                     #         "Média de Visitas", value = "n", icon = icon("chart-bar"),
-                     #         color = "teal"),
-                     
-              ) # Fechamento segunda coluna;
+              box(title = "Métricas Gerais",
+                  width = NULL,
+                  height = 270,
+                  DTOutput("bruto"))
               
             ) # Fechamento fluidRow()
             
-    ) # Fechamento função tabIten(LinkedIn)
+    ) # Fechamento função tabIten(banco)
     
   ) # Fechamento função tabItens()
   
@@ -251,11 +254,16 @@ ui <- dashboardPage(header, sidebar, body)
 server <- function(input, output) {
   
   output$pizza <- renderPlot({ # Gráfico de Pizza ----
-    pizza()
+    pizza() 
   })
   
-  output$histograma <- renderPlot({ # Gráfico de Histograma ----
+  output$histograma <- renderPlot({ #  Histograma ----
     salarios()
+  })
+  
+  output$pontos <- renderPlotly({ # Gráfico de Pontos ----
+    pontos <- pontos()
+    ggplotly(pontos) %>% layout(legend = list(orientation = "h", x = 0.1, y = 0))
   })
   
    output$simples <- renderPlotly({ # Gráfico Univariado ----
@@ -265,7 +273,20 @@ server <- function(input, output) {
    
    output$proporcao <- renderPlotly({ # Gráficos com proporção ----
      prop <- prop(input$var)
-     ggplotly(prop)
+     ggplotly(prop) %>% layout(legend = list(orientation = "h", x = 0.2, y = -0.1))
+   })
+   
+   output$boxplot <- renderPlot({ # Boxplots ----
+     boxplot(input$var)
+   })
+   
+   output$associacao <- renderDT({ # Tabela de Associações ----
+     datatable(assoc, options = list(searching = FALSE)) 
+   })
+   
+   output$bruto <- renderDT({ # Banco Bruto ----
+     bruto <- read.csv2("dados.csv") %>% select(-1)
+     datatable(bruto)
    })
    
    }
