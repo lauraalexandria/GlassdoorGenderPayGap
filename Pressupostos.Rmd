@@ -18,44 +18,6 @@ source(here("Graficos.R"))
 
 # Modelos
 
-```{r}
-m1 <- lm(Total ~ Genero*Cargo, dados)
-m2 <- lm(Total ~ Genero*Idade, dados)
-m3 <- lm(Total ~ Genero*as.factor(Performance), dados)
-m4 <- lm(Total ~ Genero*Titulo, dados)
-m5 <- lm(Total ~ Genero*Departamento, dados)
-m6 <- lm(Total ~ Genero*as.factor(Senioridade), dados)
-```
-
-```{r}
-mod1 <- aov(Total ~ Genero*Cargo, dados)
-mod2 <- aov(Total ~ Genero*Idade, dados)
-mod3 <- aov(Total ~ Genero*as.factor(Performance), dados)
-mod4 <- aov(Total ~ Genero*Titulo, dados)
-mod5 <- aov(Total ~ Genero*Departamento, dados)
-mod6 <- aov(Total ~ Genero*as.factor(Senioridade), dados)
-summary(mod1)
-summary(mod2)
-summary(mod3)
-summary(mod4)
-summary(mod5)
-summary(mod6)
-```
-
-```{r}
-m1 <- lm(Total ~ Genero*Cargo, dados)
-m2 <- lm(Total ~ Genero*Idade, dados)
-m3 <- lm(Total ~ Genero*as.factor(Performance), dados)
-m4 <- lm(Total ~ Genero*Titulo, dados)
-m5 <- lm(Total ~ Genero*Departamento, dados)
-m6 <- lm(Total ~ Genero*as.factor(Senioridade), dados)
-summary(m1)
-summary(m2)
-summary(m3)
-summary(m4)
-summary(m5)
-summary(m6)
-```
 
 ```{r}
 mod.teste <- aov(Total ~ Genero + Cargo + Idade + as.factor(Performance) + Titulo +
@@ -107,56 +69,35 @@ Nitidamente a idade não aparenta seguir uma distribuição Normal. A variável 
 ## Independência dos resíduos
 
 ```{r}
-independencia <- function(mod){
-  data <- cbind(dados, preditos = predict(mod), residuos = resid(mod)) 
-  ggplot(data, aes(x = 1:1000, y= residuos)) + geom_point() +
+data <- cbind(dados, preditos = predict(mod.teste), residuos = resid(mod.teste)) 
+ggplot(data, aes(x = 1:1000, y= residuos)) + geom_point() +
   geom_hline(yintercept = 0, color = 'red')
-}
-
-i1 <- independencia(m1)
-i2 <- independencia(m2)
-i3 <- independencia(m3)
-i4 <- independencia(m4)
-i5 <- independencia(m5)
-i6 <- independencia(m6)
-
-(i1+i2+i3)/(i4+i5+i6)
 ```
 
 ```{r}
 set.seed(2021)
-car::durbinWatsonTest(m1)
-car::durbinWatsonTest(m2)
-car::durbinWatsonTest(m3)
-car::durbinWatsonTest(m4)
-car::durbinWatsonTest(m5)
-car::durbinWatsonTest(m6)
+car::durbinWatsonTest(mod.teste)
 ```
 
+O gráfico acima apresenta pontos aleatoriamente distribuídos e com proporção de valores positivos e negativos aproximadamente iguais, o que corrobora para a hipótese de que os erros são independentes. E utilizando o nível de significância igual a 5%, o teste de Durbin-Watson também indica que há evidência amostral que os resíduos não sejam independentes.
 
 ## Homocedasticidade
 
 ```{r}
-var_const <- function(mod){
-  data <- cbind(dados, preditos = predict(mod), residuos = resid(mod)) 
-  var <- ifelse(str_detect(mod, "1"), "Cargo", ifelse(str_detect(mod, "2"), "Idade",
-         ifelse(str_detect(mod, "3"), "Performance", ifelse(str_detect(mod, "4"), "Titulo", ifelse(str_detect(mod, "5"),  "Departamento", "Senioridade")))))
-  
-  g1 <- ggplot(data, aes(x = preditos, y = residuos))+geom_point()
-  g2 <- ggplot(data, aes(x = Genero, y = residuos))+geom_point()
-  g3 <- ggplot(data, aes(x = get(var), y = residuos))+geom_point()
-  
-  g1+g2+g3
+var_const <- function(var){ 
+  ggplot(data, aes(x = get(var), y = residuos))+geom_point()
 }
 
-v1 <- var_const(m1)
-v2 <- var_const(m2)
-v3 <- var_const(m3)
-v4 <- var_const(m4)
-v5 <- var_const(m5)
-v6 <- var_const(m6)
+v1 <- var_const("preditos")
+v2 <- var_const("Genero")
+v3 <- var_const("Cargo")
+v4 <- var_const("Idade")
+v5 <- var_const("Performance")
+v6 <- var_const("Titulo")
+v7 <- var_const("Departamento")
+v8 <- var_const("Senioridade")
 
-v1/v2/v3/v4/v5/v6
+(v1+v2+v3+v4)/(v5+v6+v7+v8)
 ```
 
-
+Como os pontos do primeiro gráfico parecem estar distribuidos de forma aleatória e a variação nos demais gráficos é muito semelhante entre as diferentes categorias, tem-se evidência que não houve violação na suposição de variância constante dos erros.
