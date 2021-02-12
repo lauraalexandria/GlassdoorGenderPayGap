@@ -42,7 +42,7 @@ salarios <- function(){
 
 pontos <- function(){
   ggplot(dados, aes(y = Total, x = Genero, color = Genero)) + geom_jitter() + 
-    labs(x = "", y = "Frequencia") + 
+    labs(x = "", y = "") + 
     scale_color_manual(values=paleta1(2))
 }
 
